@@ -37,22 +37,36 @@ if( !empty($_POST['btn_submit']) ) {
   }
   
   if( empty($error_message) ) {
-  //$file_handleにファイルへのアクセス情報が代入されます。
-    if( $file_handle = fopen( FILENAME, "a") ) {
-      
-      // 書き込み日時を取得
-      $now_date = date("Y-m-d H:i:s");
+  
+    // データベースに接続
+		$mysqli = new mysqli( 'mysql', 'ken', 'Nanryou1', 'php');
     
-      // 書き込むデータを作成
-      $data = "'".$clean['view_name']."','".$clean['message']."','".$now_date."'\n";
-    
-      // 書き込み
-      fwrite( $file_handle, $data);
-      
-      // ファイルを閉じる
-      fclose( $file_handle);
-      $success_message = 'メッセージを書き込みました。';
-    }	
+    // 接続エラーの確認
+		if( $mysqli->connect_errno ) {
+			$error_message[] = '書き込みに失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
+		} else {
+			// 文字コード設定
+			$mysqli->set_charset('utf8');
+			
+			// 書き込み日時を取得
+			$now_date = date("Y-m-d H:i:s");
+			
+			// データを登録するSQL作成
+			$sql = "INSERT INTO board (view_name, message, post_date) VALUES ( '$clean[view_name]', '$clean[message]', '$now_date')";
+			
+			// データを登録
+			$res = $mysqli->query($sql);
+		
+			if( $res ) {
+				$success_message = 'メッセージを書き込みました。';
+			} else {
+				$error_message[] = '書き込みに失敗しました。';
+			}
+		
+			// データベースの接続を閉じる
+			$mysqli->close();
+		}
+
   }
   //ファイルを開いて
   if( $file_handle = fopen( FILENAME,'r') ) 
