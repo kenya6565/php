@@ -1,9 +1,11 @@
 <?php
-// メッセージを保存するファイルのパス設定
-define( 'FILENAME', './message.txt');
-
 // タイムゾーン設定
 date_default_timezone_set('Asia/Tokyo');
+// データベースの接続情報
+define( 'DB_HOST', 'mysql');
+define( 'DB_USER', 'ken');
+define( 'DB_PASS', 'Nanryou1');
+define( 'DB_NAME', 'php');
 
 // 変数の初期化
 $now_date = null;
@@ -39,7 +41,7 @@ if( !empty($_POST['btn_submit']) ) {
   if( empty($error_message) ) {
   
     // データベースに接続
-		$mysqli = new mysqli( 'mysql', 'ken', 'Nanryou1', 'php');
+		$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS , DB_NAME);
     
     // 接続エラーの確認
 		if( $mysqli->connect_errno ) {
@@ -70,7 +72,7 @@ if( !empty($_POST['btn_submit']) ) {
   }
 
 // データベースに接続
-$mysqli = new mysqli( 'mysql', 'ken', 'Nanryou1', 'php');
+$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS , DB_NAME);
 
 // 接続エラーの確認
 if( $mysqli->connect_errno ) {
@@ -78,7 +80,7 @@ if( $mysqli->connect_errno ) {
 } else {
 
   $sql = "SELECT view_name,message,post_date FROM board ORDER BY post_date DESC";
-  
+
   //発行したquery文を実際に実行
 	$res = $mysqli->query($sql);
 	
