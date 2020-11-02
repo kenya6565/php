@@ -68,29 +68,26 @@ if( !empty($_POST['btn_submit']) ) {
 		}
 
   }
-  //ファイルを開いて
-  if( $file_handle = fopen( FILENAME,'r') ) 
-  {
-    //開いたファイルを取得してecho
-    while( $data = fgets($file_handle) ){
-      echo $data . "<br>";
-    
-    //文字列を分けて配列にして
-      $split_data = preg_split( '/\'/', $data);
 
-    //分けた中からタイトル、内容、時間を配列にいれる
-      $message = array(
-          'view_name' => $split_data[1],
-          'message' => $split_data[3],
-          'post_date' => $split_data[5]
-      );
-    //$messageの配列を先頭の配列として新しい配列要素として追加する
-      array_unshift( $message_array, $message);
-    }
+// データベースに接続
+$mysqli = new mysqli( 'mysql', 'ken', 'Nanryou1', 'php');
 
-    // ファイルを閉じる
-    fclose( $file_handle);
-  }
+// 接続エラーの確認
+if( $mysqli->connect_errno ) {
+	$error_message[] = 'データの読み込みに失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
+} else {
+
+  $sql = "SELECT view_name,message,post_date FROM board ORDER BY post_date DESC";
+  
+  //発行したquery文を実際に実行
+	$res = $mysqli->query($sql);
+	
+	if( $res ) {
+		$message_array = $res->fetch_all(MYSQLI_ASSOC);
+	}
+	
+	$mysqli->close();
+}
 
 }
 ?>
