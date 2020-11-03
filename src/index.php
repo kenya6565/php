@@ -18,6 +18,8 @@ $success_message = null;
 $error_message = array();
 $clean = array();
 
+session_start();
+
 if( !empty($_POST['btn_submit']) ) {
   //var_dump($_POST);
 
@@ -28,6 +30,9 @@ if( !empty($_POST['btn_submit']) ) {
     $clean['view_name'] = htmlspecialchars( $_POST['view_name'], ENT_QUOTES);
     //空白の削除　
     $clean['view_name'] = preg_replace( '/\\r\\n|\\n|\\r/', '', $clean['view_name']);
+
+    // セッションに表示名を保存
+		$_SESSION['view_name'] = $clean['view_name'];
 	}
 
   // メッセージの入力チェック
@@ -380,7 +385,7 @@ article.reply::before {
 <form method="post">
 	<div>
 		<label for="view_name">表示名</label>
-		<input id="view_name" type="text" name="view_name" value="">
+		<input id="view_name" type="text" name="view_name" value="<?php if( !empty($_SESSION['view_name']) ){ echo $_SESSION['view_name']; } ?>">
 	</div>
 	<div>
 		<label for="message">ひと言メッセージ</label>
