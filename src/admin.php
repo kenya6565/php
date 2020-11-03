@@ -1,4 +1,7 @@
 <?php
+// 管理ページのログインパスワード
+define( 'PASSWORD', 'adminPassword');
+
 // タイムゾーン設定
 date_default_timezone_set('Asia/Tokyo');
 // データベースの接続情報
@@ -21,7 +24,12 @@ $clean = array();
 session_start();
 
 if( !empty($_POST['btn_submit']) ) {
-  
+  if( !empty($_POST['admin_password']) && $_POST['admin_password'] === PASSWORD ) {
+		$_SESSION['admin_login'] = true;
+	} else {
+		$error_message[] = 'ログインに失敗しました。';
+	}
+
 
   }
 
@@ -45,7 +53,6 @@ if( $mysqli->connect_errno ) {
 	$mysqli->close();
 }
 
-}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -191,6 +198,7 @@ label {
 }
 
 input[type="text"],
+input[type="password"],
 textarea {
 	margin-bottom: 20px;
 	padding: 10px;
@@ -200,7 +208,8 @@ textarea {
     background: #fff;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="password"] {
 	width: 200px;
 }
 textarea {
@@ -331,18 +340,30 @@ article.reply::before {
 
 <hr>
 <section>
-<!-- ここに投稿されたメッセージを表示 -->
-<?php if( !empty($message_array) ): ?>
-<?php foreach( $message_array as $value ): ?>
-<article>
-    <div class="info">
-        <h2><?php echo $value['view_name']; ?></h2>
-        <time><?php echo date('Y年m月d日 H:i', strtotime($value['post_date'])); ?></time>
+
+<?php if( !empty($_SESSION['admin_login']) && $_SESSION['admin_login'] === true ): ?>
+  <!-- ここに投稿されたメッセージを表示 -->
+  <?php if( !empty($message_array) ): ?>
+    <?php foreach( $message_array as $value ): ?>
+      <article>
+          <div class="info">
+              <h2><?php echo $value['view_name']; ?></h2>
+              <time><?php echo date('Y年m月d日 H:i', strtotime($value['post_date'])); ?></time>
+          </div>
+          <p><?php echo $value['message']; ?></p>
+      </article>
+    <?php endforeach; ?>
+  <?php endif; ?>
+<?php else: ?>
+  <form method="post">
+    <div>
+        <label for="admin_password">ログインパスワード</label>
+        <input id="admin_password" type="password" name="admin_password" value="">
     </div>
-    <p><?php echo $value['message']; ?></p>
-</article>
-<?php endforeach; ?>
+    <input type="submit" name="btn_submit" value="ログイン">
+  </form>
 <?php endif; ?>
+
 </section>
 </body>
 </html>
