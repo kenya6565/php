@@ -11,8 +11,18 @@ $csv_data = null;
 $sql = null;
 $res = null;
 $message_array = array();
+$limit = null;
 
 session_start();
+// 取得件数
+if( !empty($_GET['limit']) ) {
+
+	if( $_GET['limit'] === "10" ) {
+		$limit = 10;
+	} elseif( $_GET['limit'] === "30" ) {
+		$limit = 30;
+	}
+}
 //もし管理者がアクセスダウンロードボタンを押してた場合はOK
 if( !empty($_SESSION['admin_login']) && $_SESSION['admin_login'] === true ) {
 
@@ -29,7 +39,11 @@ if( !empty($_SESSION['admin_login']) && $_SESSION['admin_login'] === true ) {
 	// 接続エラーの確認
 	if( !$mysqli->connect_errno ) {
 
-		$sql = "SELECT * FROM board ORDER BY post_date ASC";
+		if( !empty($limit) ) {
+			$sql = "SELECT * FROM board ORDER BY post_date ASC LIMIT $limit";
+		} else {
+			$sql = "SELECT * FROM board ORDER BY post_date ASC";
+		}
 		$res = $mysqli->query($sql);
 
 		if( $res ) {
