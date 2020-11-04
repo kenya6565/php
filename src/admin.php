@@ -342,7 +342,12 @@ article.reply::before {
 <section>
 
 <?php if( !empty($_SESSION['admin_login']) && $_SESSION['admin_login'] === true ): ?>
-  <!-- ここに投稿されたメッセージを表示 -->
+  
+  <form method="get" action="./download.php">
+    <input type="submit" name="btn_download" value="ダウンロード">
+  </form>
+
+
   <?php if( !empty($message_array) ): ?>
     <?php foreach( $message_array as $value ): ?>
       <article>
