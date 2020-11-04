@@ -1,7 +1,4 @@
 <?php
-// 管理ページのログインパスワード
-define( 'PASSWORD', 'adminPassword');
-
 // タイムゾーン設定
 date_default_timezone_set('Asia/Tokyo');
 // データベースの接続情報
@@ -11,54 +8,52 @@ define( 'DB_PASS', 'Nanryou1');
 define( 'DB_NAME', 'php');
 
 // 変数の初期化
-$now_date = null;
-$data = null;
-$file_handle = null;
-$split_data = null;
-$message = array();
-$message_array = array();
-$success_message = null;
-$error_message = array();
-$clean = array();
+
 
 session_start();
+// 管理者としてログインしているか確認
+if( empty($_SESSION['admin_login']) || $_SESSION['admin_login'] !== true ) {
 
-if( !empty($_POST['btn_submit']) ) {
-  if( !empty($_POST['admin_password']) && $_POST['admin_password'] === PASSWORD ) {
-		$_SESSION['admin_login'] = true;
-	} else {
-		$error_message[] = 'ログインに失敗しました。';
-	}
-
-
-  }
-
-// データベースに接続
-$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS , DB_NAME);
-
-// 接続エラーの確認
-if( $mysqli->connect_errno ) {
-	$error_message[] = 'データの読み込みに失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
-} else {
-
-  $sql = "SELECT id,view_name,message,post_date FROM board ORDER BY post_date DESC";
-
-  //発行したquery文を実際に実行
-	$res = $mysqli->query($sql);
-	
-	if( $res ) {
-		$message_array = $res->fetch_all(MYSQLI_ASSOC);
-	}
-	
-	$mysqli->close();
+	// ログインページへリダイレクト
+	header("Location: ./admin.php");
 }
+
+if( !empty($_GET['message_id']) ) {
+
+	$message_id = (int)htmlspecialchars($_GET['message_id'], ENT_QUOTES);
+	
+	// データベースに接続
+	$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS, DB_NAME);
+	
+	// 接続エラーの確認
+	if( $mysqli->connect_errno ) {
+		$error_message[] = 'データベースの接続に失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
+	} else {
+	
+		// データの読み込み
+		$sql = "SELECT * FROM board WHERE id = $message_id";
+		$res = $mysqli->query($sql);
+		
+		if( $res ) {
+			$message_data = $res->fetch_assoc();
+		} else {
+		
+			// データが読み込めなかったら一覧に戻る
+			header("Location: ./admin.php");
+		}
+		
+		$mysqli->close();
+	}
+
+}
+
 
 ?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>ひと言掲示板 管理ページ</title>
+<title>ひと言掲示板 管理ページ（投稿の編集）</title>
 <style>
 
 /*------------------------------
@@ -198,7 +193,6 @@ label {
 }
 
 input[type="text"],
-input[type="password"],
 textarea {
 	margin-bottom: 20px;
 	padding: 10px;
@@ -208,8 +202,7 @@ textarea {
     background: #fff;
 }
 
-input[type="text"],
-input[type="password"] {
+input[type="text"] {
 	width: 200px;
 }
 textarea {
@@ -304,11 +297,6 @@ article.reply::before {
 		line-height: 1.6em;
 		font-size: 72%;
 	}
-  .info p {
-		display: inline-block;
-		line-height: 1.6em;
-		font-size: 86%;
-	}
     article p {
         color: #555;
         font-size: 86%;
@@ -330,10 +318,24 @@ article.reply::before {
         height: 70px;
     }
 }
+.btn_cancel {
+	display: inline-block;
+	margin-right: 10px;
+	padding: 10px 20px;
+	color: #555;
+	font-size: 86%;
+	border-radius: 5px;
+	border: 1px solid #999;
+}
+.btn_cancel:hover {
+	color: #999;
+	border-color: #999;
+	text-decoration: none;
+}
 </style>
 </head>
 <body>
-<h1>ひと言掲示板 管理ページ</h1>
+
 
 <?php if( !empty($error_message) ): ?>
 	<ul class="error_message">
@@ -342,47 +344,19 @@ article.reply::before {
 		<?php endforeach; ?>
 	</ul>
 <?php endif; ?>
+<form method="post">
+	<div>
+		<label for="view_name">表示名</label>
+		<input id="view_name" type="text" name="view_name" value="<?php if( !empty($message_data['view_name']) ){ echo $message_data['view_name']; } ?>">
+	</div>
+	<div>
+		<label for="message">ひと言メッセージ</label>
+		<textarea id="message" name="message"><?php if( !empty($message_data['message']) ){ echo $message_data['message']; } ?></textarea>
+	</div>
+  <a class="btn_cancel" href="admin.php">キャンセル</a>
+	<input type="submit" name="btn_submit" value="更新">
+  <input type="hidden" name="message_id" value="<?php echo $message_data['id']; ?>">
+</form>
 
-<hr>
-<section>
-
-<?php if( !empty($_SESSION['admin_login']) && $_SESSION['admin_login'] === true ): ?>
-  
-  <form method="get" action="./download.php">
-    <select name="limit">
-        <option value="">全て</option>
-        <option value="10">10件</option>
-        <option value="30">30件</option>
-    </select>
-    <input type="submit" name="btn_download" value="ダウンロード">
-  </form>
-
-
-  <?php if( !empty($message_array) ): ?>
-    <?php foreach( $message_array as $value ): ?>
-      <article>
-          <div class="info">
-              <h2><?php echo $value['view_name']; ?></h2>
-              <time><?php echo date('Y年m月d日 H:i', strtotime($value['post_date'])); ?></time>
-              <p>
-                <a href="edit.php?message_id=<?php echo $value['id']; ?>">編集</a>  
-                <a href="delete.php?message_id=<?php echo $value['id']; ?>">削除</a>
-              </p>
-          </div>
-          <p><?php echo $value['message']; ?></p>
-      </article>
-    <?php endforeach; ?>
-  <?php endif; ?>
-<?php else: ?>
-  <form method="post">
-    <div>
-        <label for="admin_password">ログインパスワード</label>
-        <input id="admin_password" type="password" name="admin_password" value="">
-    </div>
-    <input type="submit" name="btn_submit" value="ログイン">
-  </form>
-<?php endif; ?>
-
-</section>
 </body>
 </html>
