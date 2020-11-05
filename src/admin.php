@@ -369,7 +369,7 @@ article.reply::before {
                 <a href="delete.php?message_id=<?php echo $value['id']; ?>">削除</a>
               </p>
           </div>
-          <p><?php echo $value['message']; ?></p>
+          <p><?php echo nl2br($value['message']); ?></p>
       </article>
     <?php endforeach; ?>
   <?php endif; ?>

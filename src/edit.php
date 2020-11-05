@@ -8,7 +8,12 @@ define( 'DB_PASS', 'Nanryou1');
 define( 'DB_NAME', 'php');
 
 // 変数の初期化
-
+$message_id = null;
+$mysqli = null;
+$sql = null;
+$res = null;
+$error_message = array();
+$message_data = array();
 
 session_start();
 // 管理者としてログインしているか確認
@@ -17,8 +22,8 @@ if( empty($_SESSION['admin_login']) || $_SESSION['admin_login'] !== true ) {
 	// ログインページへリダイレクト
 	header("Location: ./admin.php");
 }
-
-if( !empty($_GET['message_id']) ) {
+//admin.phpから編集ボタンを押して編集画面に遷移する時
+if( !empty($_GET['message_id']) && empty($_POST['message_id']) ) {
 
 	$message_id = (int)htmlspecialchars($_GET['message_id'], ENT_QUOTES);
 	
@@ -43,6 +48,44 @@ if( !empty($_GET['message_id']) ) {
 		}
 		
 		$mysqli->close();
+	}
+
+}elseif( !empty($_POST['message_id']) ) {
+  //①サニタイズ
+  $message_id = (int)htmlspecialchars( $_POST['message_id'], ENT_QUOTES);
+	//②バリデーション
+	if( empty($_POST['view_name']) ) {
+		$error_message[] = '表示名を入力してください。';
+	} else {
+		$message_data['view_name'] = htmlspecialchars($_POST['view_name'], ENT_QUOTES);
+	}
+	
+	if( empty($_POST['message']) ) {
+		$error_message[] = 'メッセージを入力してください。';
+	} else {
+		$message_data['message'] = htmlspecialchars($_POST['message'], ENT_QUOTES);
+	}
+
+	if( empty($error_message) ) {
+	
+		// ③データベースに接続
+		$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS, DB_NAME);
+		
+		// 接続エラーの確認
+		if( $mysqli->connect_errno ) {
+			$error_message[] = 'データベースの接続に失敗しました。 エラー番号 ' . $mysqli->connect_errno . ' : ' . $mysqli->connect_error;
+		} else {
+      //$message_dataは入力欄で記入した内容をサニタイズしたもの
+			$sql = "UPDATE board set view_name = '$message_data[view_name]', message= '$message_data[message]' WHERE id =  $message_id";
+			$res = $mysqli->query($sql);
+		}
+		
+		$mysqli->close();
+		
+		// 更新に成功したら一覧に戻る
+		if( $res ) {
+			header("Location: ./admin.php");
+		}
 	}
 
 }
