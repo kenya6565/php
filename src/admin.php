@@ -23,6 +23,12 @@ $clean = array();
 
 session_start();
 
+//emptyじゃなかったら=ボタンが押されたら
+if( !empty($_GET['btn_logout']) ) {
+  //unsetでセッションをきる
+	unset($_SESSION['admin_login']);
+}
+
 if( !empty($_POST['btn_submit']) ) {
   if( !empty($_POST['admin_password']) && $_POST['admin_password'] === PASSWORD ) {
 		$_SESSION['admin_login'] = true;
@@ -234,6 +240,14 @@ button:hover {
     background-color: #2392d8;
 }
 
+input[name=btn_logout] {
+	margin-top: 40px;
+	background-color: #666;
+}
+input[name=btn_logout]:hover {
+	background-color: #777;
+}
+
 hr {
 	margin: 20px 0;
 	padding: 0;
@@ -373,6 +387,9 @@ article.reply::before {
       </article>
     <?php endforeach; ?>
   <?php endif; ?>
+  <form method="get" action="">
+    <input type="submit" name="btn_logout" value="ログアウト">
+  </form>
 <?php else: ?>
   <form method="post">
     <div>
