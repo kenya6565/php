@@ -1,56 +1,54 @@
 <?php
-// タイムゾーン設定
-date_default_timezone_set('Asia/Tokyo');
+
 // データベースの接続情報
 define( 'DB_HOST', 'mysql');
 define( 'DB_USER', 'ken');
 define( 'DB_PASS', 'Nanryou1');
 define( 'DB_NAME', 'php');
 
+// タイムゾーン設定
+date_default_timezone_set('Asia/Tokyo');
+
 // 変数の初期化
 $now_date = null;
 $data = null;
 $file_handle = null;
 $split_data = null;
-$message = array();
 $message_array = array();
-$success_message = null;
 $error_message = array();
 $clean = array();
 
 session_start();
-
+//書き込みの時
 if( !empty($_POST['btn_submit']) ) {
-  //var_dump($_POST);
-
-  // 表示名が空白ならバリデーション、空白じゃないならサニタイズ
+	
+	// 表示名の入力チェック
 	if( empty($_POST['view_name']) ) {
 		$error_message[] = '表示名を入力してください。';
-  }else {
-    $clean['view_name'] = htmlspecialchars( $_POST['view_name'], ENT_QUOTES);
-    //空白の削除　
-    $clean['view_name'] = preg_replace( '/\\r\\n|\\n|\\r/', '', $clean['view_name']);
+	} else {
+		$clean['view_name'] = htmlspecialchars( $_POST['view_name'], ENT_QUOTES);
 
-    // セッションに表示名を保存
+		// セッションに表示名を保存
 		$_SESSION['view_name'] = $clean['view_name'];
 	}
-
-  // メッセージの入力チェック
+	
+	// メッセージの入力チェック
 	if( empty($_POST['message']) ) {
 		$error_message[] = 'ひと言メッセージを入力してください。';
-	}else {
-    $clean['message'] = htmlspecialchars( $_POST['message'], ENT_QUOTES);
-  }
-  
-  if( empty($error_message) ) {
-  
-    // データベースに接続
-		$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS , DB_NAME);
-    
-    // 接続エラーの確認
+	} else {
+		$clean['message'] = htmlspecialchars( $_POST['message'], ENT_QUOTES);
+	}
+
+	if( empty($error_message) ) {
+		
+		// データベースに接続
+		$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS, DB_NAME);
+
+		// 接続エラーの確認
 		if( $mysqli->connect_errno ) {
 			$error_message[] = '書き込みに失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
 		} else {
+
 			// 文字コード設定
 			$mysqli->set_charset('utf8');
 			
@@ -64,7 +62,7 @@ if( !empty($_POST['btn_submit']) ) {
 			$res = $mysqli->query($sql);
 		
 			if( $res ) {
-				$success_message = 'メッセージを書き込みました。';
+				$_SESSION['success_message'] = 'メッセージを書き込みました。';
 			} else {
 				$error_message[] = '書き込みに失敗しました。';
 			}
@@ -72,30 +70,30 @@ if( !empty($_POST['btn_submit']) ) {
 			// データベースの接続を閉じる
 			$mysqli->close();
 		}
+    //リダイレクトすることでsessionのパラメーターがリセットされる→二重投稿を防ぐ
+		header('Location: ./');
+	}
+}
 
-  }
-
+//再読み込みした場合
 // データベースに接続
-$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS , DB_NAME);
+$mysqli = new mysqli( DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 // 接続エラーの確認
 if( $mysqli->connect_errno ) {
 	$error_message[] = 'データの読み込みに失敗しました。 エラー番号 '.$mysqli->connect_errno.' : '.$mysqli->connect_error;
 } else {
 
-  $sql = "SELECT view_name,message,post_date FROM board ORDER BY post_date DESC";
-
-  //発行したquery文を実際に実行
+	$sql = "SELECT view_name,message,post_date FROM board ORDER BY post_date DESC";
 	$res = $mysqli->query($sql);
-	
-	if( $res ) {
+
+    if( $res ) {
 		$message_array = $res->fetch_all(MYSQLI_ASSOC);
-	}
-	
-	$mysqli->close();
+    }
+
+    $mysqli->close();
 }
 
-}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -220,6 +218,14 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+.wrapper {
+    display: flex;
+    margin: 0 auto 50px;
+    padding: 0 20px;
+    max-width: 1200px;
+    align-items: flex-start;
 }
 
 h1 {
@@ -370,16 +376,18 @@ article.reply::before {
 </head>
 <body>
 <h1>ひと言掲示板</h1>
-<?php if( !empty($success_message) ): ?>
-    <p class="success_message"><?php echo $success_message; ?></p>
+<!-- 書き込みした際に成功メッセージを投稿して成功メッセージのセッションを削除 -->
+<?php if( empty($_POST['btn_submit']) && !empty($_SESSION['success_message']) ): ?>
+    <p class="success_message"><?php echo $_SESSION['success_message']; ?></p>
+    <?php unset($_SESSION['success_message']); ?>
 <?php endif; ?>
 
 <?php if( !empty($error_message) ): ?>
-	<ul class="error_message">
+    <ul class="error_message">
 		<?php foreach( $error_message as $value ): ?>
-			<li>・<?php echo $value; ?></li>
+            <li>・<?php echo $value; ?></li>
 		<?php endforeach; ?>
-	</ul>
+    </ul>
 <?php endif; ?>
 <form method="post">
 	<div>
@@ -394,9 +402,8 @@ article.reply::before {
 </form>
 <hr>
 <section>
-<!-- ここに投稿されたメッセージを表示 -->
-<?php if( !empty($message_array) ): ?>
-<?php foreach( $message_array as $value ): ?>
+<?php if( !empty($message_array) ){ ?>
+<?php foreach( $message_array as $value ){ ?>
 <article>
     <div class="info">
         <h2><?php echo $value['view_name']; ?></h2>
@@ -404,8 +411,8 @@ article.reply::before {
     </div>
     <p><?php echo nl2br($value['message']); ?></p>
 </article>
-<?php endforeach; ?>
-<?php endif; ?>
+<?php } ?>
+<?php } ?>
 </section>
 </body>
 </html>
