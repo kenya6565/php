@@ -377,7 +377,7 @@ article.reply::before {
 <body>
 <h1>ひと言掲示板
 <form method="get" action="./inquiry.php">
-  <input type="submit" style = "float: right;" name="btn_submit" value="お問い合わせ">
+  <input type="submit" style = "float: right;" name="btn_inquiry" value="お問い合わせ">
 </form>
 </h1>
 <!-- 書き込みした際に成功メッセージを投稿して成功メッセージのセッションを削除 -->
