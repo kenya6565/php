@@ -3,6 +3,15 @@
 
 // 変数の初期化
 $page_flag = 0;
+$clean = array();
+
+// サニタイズ
+//全てのpostパラメーターをサニタイズして$cleanにいれる
+if( !empty($_POST) ) {
+	foreach( $_POST as $key => $value ) {
+		$clean[$key] = htmlspecialchars( $value, ENT_QUOTES);
+	}
+}
 
 if( !empty($_POST['btn_confirm']) ) {
 
