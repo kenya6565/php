@@ -115,20 +115,28 @@ function validation($data) {
 	// 氏名のバリデーション
 	if( empty($data['your_name']) ) {
 		$error[] = "「氏名」は必ず入力してください。";
+	}elseif( 20 < mb_strlen($data['your_name']) ) {
+		$error[] = "「氏名」は20文字以内で入力してください。";
 	}
 
   // メールアドレスのバリデーション
 	if( empty($data['email']) ) {
 		$error[] = "「メールアドレス」は必ず入力してください。";
+	}elseif( !preg_match( '/^[0-9a-z_.\/?-]+@([0-9a-z-]+\.)+[0-9a-z-]+$/', $data['email']) ) {
+		$error[] = "「メールアドレス」は正しい形式で入力してください。";
 	}
 
 	// 性別のバリデーション
 	if( empty($data['gender']) ) {
 		$error[] = "「性別」は必ず入力してください。";
+	}elseif( $data['gender'] !== 'male' && $data['gender'] !== 'female' ) {
+		$error[] = "「性別」は必ず入力してください。";
 	}
 
 	// 年齢のバリデーション
 	if( empty($data['age']) ) {
+		$error[] = "「年齢」は必ず入力してください。";
+	}elseif( (int)$data['age'] < 1 || 6 < (int)$data['age'] ) {
 		$error[] = "「年齢」は必ず入力してください。";
 	}
 
@@ -140,8 +148,10 @@ function validation($data) {
 	// プライバシーポリシー同意のバリデーション
 	if( empty($data['agreement']) ) {
 		$error[] = "プライバシーポリシーをご確認ください。";
+	}elseif( (int)$data['agreement'] !== 1 ) {
+		$error[] = "プライバシーポリシーをご確認ください。";
 	}
-  
+
 	return $error;
 }
 ?>
@@ -267,12 +277,14 @@ textarea[name=contact] {
 	  </div>
 	<div class="element_wrap">
 		<label>年齢</label>
-		<p><?php if( $clean['age'] === "1" ){ echo '〜19歳'; }
-		elseif( $clean['age'] === "2" ){ echo '20歳〜29歳'; }
-		elseif( $clean['age'] === "3" ){ echo '30歳〜39歳'; }
-		elseif( $clean['age'] === "4" ){ echo '40歳〜49歳'; }
-		elseif( $clean['age'] === "5" ){ echo '50歳〜59歳'; }
-		elseif( $clean['age'] === "6" ){ echo '60歳〜'; } ?></p>
+		<p>
+      <?php if( $clean['age'] === "1" ){ echo '〜19歳'; }
+      elseif( $clean['age'] === "2" ){ echo '20歳〜29歳'; }
+      elseif( $clean['age'] === "3" ){ echo '30歳〜39歳'; }
+      elseif( $clean['age'] === "4" ){ echo '40歳〜49歳'; }
+      elseif( $clean['age'] === "5" ){ echo '50歳〜59歳'; }
+      elseif( $clean['age'] === "6" ){ echo '60歳〜'; } ?>
+    </p>
 	</div>
 	<div class="element_wrap">
 		<label>お問い合わせ内容</label>
