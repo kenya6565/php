@@ -1,5 +1,5 @@
 <?php
-var_dump($_POST);
+//var_dump($_POST);
 
 // 変数の初期化
 $page_flag = 0;
@@ -10,6 +10,45 @@ if( !empty($_POST['btn_confirm']) ) {
 }elseif( !empty($_POST['btn_submit']) ) {
 
 	$page_flag = 2;
+  // 変数とタイムゾーンを初期化
+  $header = null;
+	$auto_reply_subject = null;
+	$auto_reply_text = null;
+
+  $admin_reply_subject = null;
+	$admin_reply_text = null;
+	date_default_timezone_set('Asia/Tokyo');
+
+  // ヘッダー情報を設定(メールの送り手情報)
+	$header = "MIME-Version: 1.0\n";
+	$header .= "From: kenya <noreply@gray-code.com>\n";
+	$header .= "Reply-To: GRAYCODE <noreply@gray-code.com>\n";
+
+	// 件名を設定
+	$auto_reply_subject = 'お問い合わせありがとうございます。';
+
+	// 本文を設定
+	$auto_reply_text = "この度は、お問い合わせ頂き誠にありがとうございます。
+下記の内容でお問い合わせを受け付けました。\n\n";
+	$auto_reply_text .= "お問い合わせ日時：" . date("Y-m-d H:i") . "\n";
+	$auto_reply_text .= "氏名：" . $_POST['your_name'] . "\n";
+	$auto_reply_text .= "メールアドレス：" . $_POST['email'] . "\n\n";
+	$auto_reply_text .= "GRAYCODE 事務局";
+
+	// ①お問い合わせフォームを書いたユーザーに対してメール送信
+	mb_send_mail( $_POST['email'], $auto_reply_subject, $auto_reply_text,$header);
+
+  // 運営側へ送るメールの件名
+	$admin_reply_subject = "お問い合わせを受け付けました";
+	
+	// 本文を設定
+	$admin_reply_text = "下記の内容でお問い合わせがありました。\n\n";
+	$admin_reply_text .= "お問い合わせ日時：" . date("Y-m-d H:i") . "\n";
+	$admin_reply_text .= "氏名：" . $_POST['your_name'] . "\n";
+	$admin_reply_text .= "メールアドレス：" . $_POST['email'] . "\n\n";
+
+	// ②運営側へメール送信
+	mb_send_mail( 'webmaster@gray-code.com', $admin_reply_subject, $admin_reply_text, $header);
 }
 ?>
 
