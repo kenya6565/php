@@ -33,6 +33,29 @@ if( !empty($_POST['btn_confirm']) ) {
 	$auto_reply_text .= "お問い合わせ日時：" . date("Y-m-d H:i") . "\n";
 	$auto_reply_text .= "氏名：" . $_POST['your_name'] . "\n";
 	$auto_reply_text .= "メールアドレス：" . $_POST['email'] . "\n\n";
+
+  if( $_POST['gender'] === "male" ) {
+		$auto_reply_text .= "性別：男性\n";
+	} else {
+		$auto_reply_text .= "性別：女性\n";
+	}
+
+	if( $_POST['age'] === "1" ){
+		$auto_reply_text .= "年齢：〜19歳\n";
+	} elseif ( $_POST['age'] === "2" ){
+		$auto_reply_text .= "年齢：20歳〜29歳\n";
+	} elseif ( $_POST['age'] === "3" ){
+		$auto_reply_text .= "年齢：30歳〜39歳\n";
+	} elseif ( $_POST['age'] === "4" ){
+		$auto_reply_text .= "年齢：40歳〜49歳\n";
+	} elseif( $_POST['age'] === "5" ){
+		$auto_reply_text .= "年齢：50歳〜59歳\n";
+	} elseif( $_POST['age'] === "6" ){
+		$auto_reply_text .= "年齢：60歳〜\n";
+	}
+
+	$auto_reply_text .= "お問い合わせ内容：" . nl2br($_POST['contact']) . "\n\n";
+
 	$auto_reply_text .= "GRAYCODE 事務局";
 
 	// ①お問い合わせフォームを書いたユーザーに対してメール送信
@@ -47,6 +70,27 @@ if( !empty($_POST['btn_confirm']) ) {
 	$admin_reply_text .= "氏名：" . $_POST['your_name'] . "\n";
 	$admin_reply_text .= "メールアドレス：" . $_POST['email'] . "\n\n";
 
+  if( $_POST['gender'] === "male" ) {
+		$admin_reply_text .= "性別：男性\n";
+	} else {
+		$admin_reply_text .= "性別：女性\n";
+	}
+
+	if( $_POST['age'] === "1" ){
+		$admin_reply_text .= "年齢：〜19歳\n";
+	} elseif ( $_POST['age'] === "2" ){
+		$admin_reply_text .= "年齢：20歳〜29歳\n";
+	} elseif ( $_POST['age'] === "3" ){
+		$admin_reply_text .= "年齢：30歳〜39歳\n";
+	} elseif ( $_POST['age'] === "4" ){
+		$admin_reply_text .= "年齢：40歳〜49歳\n";
+	} elseif( $_POST['age'] === "5" ){
+		$admin_reply_text.= "年齢：50歳〜59歳\n";
+	} elseif( $_POST['age'] === "6" ){
+		$admin_reply_text.= "年齢：60歳〜\n";
+	}
+
+	$admin_reply_text .= "お問い合わせ内容：" . nl2br($_POST['contact']) . "\n\n";
 	// ②運営側へメール送信
 	mb_send_mail( 'webmaster@gray-code.com', $admin_reply_subject, $admin_reply_text, $header);
 }
@@ -118,6 +162,24 @@ label {
 	margin:  0;
 	text-align: left;
 }
+
+label[for=gender_male],
+label[for=gender_female],
+label[for=agreement] {
+	margin-right: 10px;
+	width: auto;
+	font-weight: normal;
+}
+
+textarea[name=contact] {
+	padding: 5px 10px;
+	width: 60%;
+	height: 100px;
+	font-size: 86%;
+	border: none;
+	border-radius: 3px;
+	background: #ddf0ff;
+}
 </style>
 </head>
 <body>
@@ -135,12 +197,43 @@ label {
       <label>メールアドレス</label>
       <p><?php echo $_POST['email']; ?></p>
     </div>
+    <div class="element_wrap">
+		<label>性別</label>
+		<p>
+      <?php if( $_POST['gender'] === "male" )
+              { echo '男性'; }
+            else{ echo '女性'; } 
+      ?>
+    </p>
+	  </div>
+	<div class="element_wrap">
+		<label>年齢</label>
+		<p><?php if( $_POST['age'] === "1" ){ echo '〜19歳'; }
+		elseif( $_POST['age'] === "2" ){ echo '20歳〜29歳'; }
+		elseif( $_POST['age'] === "3" ){ echo '30歳〜39歳'; }
+		elseif( $_POST['age'] === "4" ){ echo '40歳〜49歳'; }
+		elseif( $_POST['age'] === "5" ){ echo '50歳〜59歳'; }
+		elseif( $_POST['age'] === "6" ){ echo '60歳〜'; } ?></p>
+	</div>
+	<div class="element_wrap">
+		<label>お問い合わせ内容</label>
+		<p><?php echo nl2br($_POST['contact']); ?></p>
+	</div>
+	<div class="element_wrap">
+		<label>プライバシーポリシーに同意する</label>
+		<p><?php if( $_POST['agreement'] === "1" ){ echo '同意する'; }
+		else{ echo '同意しない'; } ?></p>
+	</div>
     <!-- 表示用 -->
     <input type="submit" name="btn_back" value="戻る">
     <input type="submit" name="btn_submit" value="送信">
-    <!-- 渡す用 -->
+      <!-- 渡す用 -->
     <input type="hidden" name="your_name" value="<?php echo $_POST['your_name']; ?>">
     <input type="hidden" name="email" value="<?php echo $_POST['email']; ?>">
+    <input type="hidden" name="gender" value="<?php echo $_POST['gender']; ?>">
+    <input type="hidden" name="age" value="<?php echo $_POST['age']; ?>">
+    <input type="hidden" name="contact" value="<?php echo $_POST['contact']; ?>">
+    <input type="hidden" name="agreement" value="<?php echo $_POST['agreement']; ?>">
   </form>
 <?php elseif( $page_flag === 2 ): ?>
   <p>送信が完了しました。</p>
@@ -150,11 +243,36 @@ label {
 <form method="post" action="">
 	<div class="element_wrap">
 		<label>氏名</label>
-		<input type="text" name="your_name" value="">
+		<input type="text" name="your_name" value="<?php if( !empty($_POST['your_name']) ){ echo $_POST['your_name']; } ?>">
 	</div>
 	<div class="element_wrap">
 		<label>メールアドレス</label>
-		<input type="text" name="email" value="">
+		<input type="text" name="email" value="<?php if( !empty($_POST['email']) ){ echo $_POST['email']; } ?>">
+	</div>
+  <div class="element_wrap">
+		<label>性別</label>
+    <!-- ラジオボタンを押してキャンセルして入力画面に戻ったときに既に押した状態になって戻る -->
+		<label for="gender_male"><input id="gender_male" type="radio" name="gender" value="male"<?php if( !empty($_POST['gender']) && $_POST['gender'] === "male" ){ echo 'checked'; } ?>>男性</label>
+		<label for="gender_female"><input id="gender_female" type="radio" name="gender" value="female"<?php if( !empty($_POST['gender']) && $_POST['gender'] === "female" ){ echo 'checked'; } ?>>女性</label>
+	</div>
+	<div class="element_wrap">
+		<label>年齢</label>
+		<select name="age">
+			<option value="">選択してください</option>
+			<option value="1"<?php if( !empty($_POST['age']) && $_POST['age'] === "1" ){ echo 'selected'; } ?>>〜19歳</option>
+			<option value="2"<?php if( !empty($_POST['age']) && $_POST['age'] === "2" ){ echo 'selected'; } ?>>20歳〜29歳</option>
+			<option value="3"<?php if( !empty($_POST['age']) && $_POST['age'] === "3" ){ echo 'selected'; } ?>>30歳〜39歳</option>
+			<option value="4"<?php if( !empty($_POST['age']) && $_POST['age'] === "4" ){ echo 'selected'; } ?>>40歳〜49歳</option>
+			<option value="5"<?php if( !empty($_POST['age']) && $_POST['age'] === "5" ){ echo 'selected'; } ?>>50歳〜59歳</option>
+			<option value="6"<?php if( !empty($_POST['age']) && $_POST['age'] === "6" ){ echo 'selected'; } ?>>60歳〜</option>
+		</select>
+	</div>
+	<div class="element_wrap">
+		<label>お問い合わせ内容</label>
+		<textarea name="contact"><?php if( !empty($_POST['contact']) ){ echo $_POST['contact']; } ?></textarea>
+	</div>
+	<div class="element_wrap">
+		<label for="agreement"><input id="agreement" type="checkbox" name="agreement" value="1"<?php if( !empty($_POST['agreement']) && $_POST['agreement'] === "1" ){ echo 'checked'; } ?>>プライバシーポリシーに同意する</label>
 	</div>
 	<input type="submit" name="btn_confirm" value="入力内容を確認する">
 </form>
