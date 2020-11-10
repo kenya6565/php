@@ -38,15 +38,21 @@ if( !empty($clean['btn_confirm']) ) {
 	$page_flag = 2;
   // 変数とタイムゾーンを初期化
   $header = null;
+  $body = null;
 	$auto_reply_subject = null;
 	$auto_reply_text = null;
 
   $admin_reply_subject = null;
 	$admin_reply_text = null;
-	date_default_timezone_set('Asia/Tokyo');
+  date_default_timezone_set('Asia/Tokyo');
+  
+  //日本語の使用宣言
+	mb_language("ja");
+	mb_internal_encoding("UTF-8");
 
   // ヘッダー情報を設定(メールの送り手情報)
-	$header = "MIME-Version: 1.0\n";
+  $header = "MIME-Version: 1.0\n";
+  $header = "Content-Type: multipart/mixed;boundary=\"__BOUNDARY__\"\n";
 	$header .= "From: kenya <noreply@gray-code.com>\n";
 	$header .= "Reply-To: GRAYCODE <noreply@gray-code.com>\n";
 
@@ -84,8 +90,23 @@ if( !empty($clean['btn_confirm']) ) {
 
 	$auto_reply_text .= "GRAYCODE 事務局";
 
+  	// テキストメッセージをセット
+	$body = "--__BOUNDARY__\n";
+	$body .= "Content-Type: text/plain; charset=\"ISO-2022-JP\"\n\n";
+	$body .= $auto_reply_text . "\n";
+	$body .= "--__BOUNDARY__\n";
+
+	// ファイルを添付
+	if( !empty($clean['attachment_file']) ) {
+		$body .= "Content-Type: application/octet-stream; name=\"{$clean['attachment_file']}\"\n";
+		$body .= "Content-Disposition: attachment; filename=\"{$clean['attachment_file']}\"\n";
+		$body .= "Content-Transfer-Encoding: base64\n";
+		$body .= "\n";
+		$body .= chunk_split(base64_encode(file_get_contents(FILE_DIR.$clean['attachment_file'])));
+    $body .= "--__BOUNDARY__\n";
+  }
 	// ①お問い合わせフォームを書いたユーザーに対してメール送信
-	mb_send_mail( $clean['email'], $auto_reply_subject, $auto_reply_text,$header);
+	mb_send_mail( $clean['email'], $auto_reply_subject, $body,$header);
 
   // 運営側へ送るメールの件名
 	$admin_reply_subject = "お問い合わせを受け付けました";
@@ -116,9 +137,25 @@ if( !empty($clean['btn_confirm']) ) {
 		$admin_reply_text.= "年齢：60歳〜\n";
 	}
 
-	$admin_reply_text .= "お問い合わせ内容：" . nl2br($clean['contact']) . "\n\n";
+  $admin_reply_text .= "お問い合わせ内容：" . nl2br($clean['contact']) . "\n\n";
+  	// テキストメッセージをセット
+	$body = "--__BOUNDARY__\n";
+	$body .= "Content-Type: text/plain; charset=\"ISO-2022-JP\"\n\n";
+	$body .= $admin_reply_text . "\n";
+	$body .= "--__BOUNDARY__\n";
+
+	// ファイルを添付
+	if( !empty($clean['attachment_file']) ) {
+		$body .= "Content-Type: application/octet-stream; name=\"{$clean['attachment_file']}\"\n";
+		$body .= "Content-Disposition: attachment; filename=\"{$clean['attachment_file']}\"\n";
+		$body .= "Content-Transfer-Encoding: base64\n";
+		$body .= "\n";
+		$body .= chunk_split(base64_encode(file_get_contents(FILE_DIR.$clean['attachment_file'])));
+		$body .= "--__BOUNDARY__\n";
+  }
+  
 	// ②運営側へメール送信
-	mb_send_mail( 'webmaster@gray-code.com', $admin_reply_subject, $admin_reply_text, $header);
+	mb_send_mail( 'webmaster@gray-code.com', $admin_reply_subject, $body, $header);
 }
 
 function validation($data) {
