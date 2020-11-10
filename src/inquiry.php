@@ -1,6 +1,6 @@
 <?php
-//var_dump($clean);
-
+//定数
+define( "FILE_DIR", "images/test/");
 // 変数の初期化
 $page_flag = 0;
 $clean = array();
@@ -16,6 +16,19 @@ if( !empty($_POST) ) {
 
 if( !empty($clean['btn_confirm']) ) {
   $error = validation($clean);
+
+    // ファイルのアップロード
+    //['tmp_name']は単純にファイル名を指すだけ
+	if( !empty($_FILES['attachment_file']['tmp_name']) ) {
+
+		$upload_res = move_uploaded_file( $_FILES['attachment_file']['tmp_name'], FILE_DIR.$_FILES['attachment_file']['name']);
+
+		if( $upload_res !== true ) {
+			$error[] = 'ファイルのアップロードに失敗しました。';
+		} else {
+			$clean['attachment_file'] = $_FILES['attachment_file']['name'];
+		}
+	}
 
 	if( empty($error) ) {
 	  $page_flag = 1;
@@ -290,6 +303,12 @@ textarea[name=contact] {
 		<label>お問い合わせ内容</label>
 		<p><?php echo nl2br($clean['contact']); ?></p>
 	</div>
+  <?php if( !empty($clean['attachment_file']) ): ?>
+	<div class="element_wrap">
+		<label>画像ファイルの添付</label>
+		<p><img src="<?php echo FILE_DIR.$clean['attachment_file']; ?>"></p>
+	</div>
+	<?php endif; ?>
 	<div class="element_wrap">
 		<label>プライバシーポリシーに同意する</label>
 		<p><?php if( $clean['agreement'] === "1" ){ echo '同意する'; }
@@ -304,6 +323,9 @@ textarea[name=contact] {
     <input type="hidden" name="gender" value="<?php echo $clean['gender']; ?>">
     <input type="hidden" name="age" value="<?php echo $clean['age']; ?>">
     <input type="hidden" name="contact" value="<?php echo $clean['contact']; ?>">
+    <?php if( !empty($clean['attachment_file']) ): ?>
+		  <input type="hidden" name="attachment_file" value="<?php echo $clean['attachment_file']; ?>">
+	  <?php endif; ?>
     <input type="hidden" name="agreement" value="<?php echo $clean['agreement']; ?>">
   </form>
 <?php elseif( $page_flag === 2 ): ?>
@@ -318,7 +340,8 @@ textarea[name=contact] {
     </ul>
 <?php endif; ?>
 
-<form method="post" action="">
+<!-- 最初の入力欄 -->
+<form method="post" action=""enctype="multipart/form-data">
 	<div class="element_wrap">
 		<label>氏名</label>
 		<input type="text" name="your_name" value="<?php if( !empty($clean['your_name']) ){ echo $clean['your_name']; } ?>">
@@ -348,6 +371,10 @@ textarea[name=contact] {
 	<div class="element_wrap">
 		<label>お問い合わせ内容</label>
 		<textarea name="contact"><?php if( !empty($clean['contact']) ){ echo $clean['contact']; } ?></textarea>
+	</div>
+  <div class="element_wrap">
+		<label>画像ファイルの添付</label>
+		<input type="file" name="attachment_file">
 	</div>
 	<div class="element_wrap">
 		<label for="agreement"><input id="agreement" type="checkbox" name="agreement" value="1"<?php if( !empty($clean['agreement']) && $clean['agreement'] === "1" ){ echo 'checked'; } ?>>プライバシーポリシーに同意する</label>
