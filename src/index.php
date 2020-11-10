@@ -375,7 +375,11 @@ article.reply::before {
 </style>
 </head>
 <body>
-<h1>ひと言掲示板</h1>
+<h1>ひと言掲示板
+<form method="get" action="./inquiry.php">
+  <input type="submit" style = "float: right;" name="btn_inquiry" value="お問い合わせ">
+</form>
+</h1>
 <!-- 書き込みした際に成功メッセージを投稿して成功メッセージのセッションを削除 -->
 <?php if( empty($_POST['btn_submit']) && !empty($_SESSION['success_message']) ): ?>
     <p class="success_message"><?php echo $_SESSION['success_message']; ?></p>
